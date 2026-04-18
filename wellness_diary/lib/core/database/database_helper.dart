@@ -4,7 +4,7 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   // This is the name of our database file
-  static const _databaseName = "WellnessDiary.db";
+  static const _databaseName = "WellnessDiary_v2.db";
   static const _databaseVersion = 1;
 
   // Make this a "Singleton" (meaning there is only ONE filing cabinet in the whole app)
@@ -27,11 +27,15 @@ class DatabaseHelper {
     String path = join(documentsDirectory.path, _databaseName);
 
     // Open the database and create the tables
-    return await openDatabase(path,
-        version: _databaseVersion, onCreate: _onCreate);
+    return await openDatabase(
+      path,
+      version: _databaseVersion,
+      onCreate: _onCreate,
+    );
   }
 
   // Here we write simple SQL to create our tables (like creating columns on a piece of paper)
+  // Here we write simple SQL to create our tables
   Future _onCreate(Database db, int version) async {
     // Drawer 1: Vitals
     await db.execute('''
@@ -50,6 +54,17 @@ class DatabaseHelper {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             mood_score INTEGER NOT NULL,
             date TEXT NOT NULL
+          )
+          ''');
+
+    // Drawer 3: Medications (NEW!)
+    await db.execute('''
+          CREATE TABLE meds_table (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            drug_name TEXT NOT NULL,
+            dosage TEXT NOT NULL,
+            time_to_take TEXT NOT NULL,
+            status INTEGER NOT NULL
           )
           ''');
   }
