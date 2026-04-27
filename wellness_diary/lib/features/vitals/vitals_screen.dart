@@ -9,96 +9,121 @@ class VitalsScreen extends StatefulWidget {
 }
 
 class _VitalsScreenState extends State<VitalsScreen> {
-  // These "Controllers" act like little hands that grab the numbers the user types
+  // 1. THE SAFETY LOCK: We create a key for our form
+  final _formKey = GlobalKey<FormState>();
+
   final systolicController = TextEditingController();
   final diastolicController = TextEditingController();
   final pulseController = TextEditingController();
 
-  // This is the magic function that saves data to your phone's memory
   void saveVitals() async {
-    // 1. Open the filing cabinet
-    final db = await DatabaseHelper.instance.database;
+    // 2. THE CHECKER: Before we talk to the database, we check if the form is valid!
+    if (_formKey.currentState!.validate()) {
+      final db = await DatabaseHelper.instance.database;
 
-    // 2. Slide a new piece of paper (data) into the 'vitals_table' drawer
-    await db.insert('vitals_table', {
-      'systolic': int.parse(systolicController.text),
-      'diastolic': int.parse(diastolicController.text),
-      'pulse': int.parse(pulseController.text),
-      'date': DateTime.now().toString(), // Stamps today's date and time
-    });
+      await db.insert('vitals_table', {
+        'systolic': int.parse(systolicController.text),
+        'diastolic': int.parse(diastolicController.text),
+        'pulse': int.parse(pulseController.text),
+        'date': DateTime.now().toString(),
+      });
 
-    // 3. Show a success message at the bottom of the screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Vitals Saved Successfully! 🩺'),
-        backgroundColor: Colors.green,
-      ),
-    );
-
-    // 4. Close this room and go back to the Dashboard
-    Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vitals Saved Successfully! 🩺'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Log Your Vitals')),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            // Box 1: Systolic
-            TextField(
-              controller: systolicController,
-              keyboardType:
-                  TextInputType.number, // Forces the number keyboard to pop up
-              decoration: const InputDecoration(
-                labelText: 'Systolic (Top Number e.g., 120)',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Box 2: Diastolic
-            TextField(
-              controller: diastolicController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Diastolic (Bottom Number e.g., 80)',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Box 3: Pulse
-            TextField(
-              controller: pulseController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Pulse (Heart Rate e.g., 72)',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 40),
-
-            // The big save button!
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: const Color(0xFFFFD700),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 50,
-                  vertical: 15,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          // SingleChildScrollView prevents the keyboard from squishing the screen!
+          padding: const EdgeInsets.all(20.0),
+          // 3. THE FORM: We wrap our TextFields inside a Form
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                // Upgraded to TextFormField for validation
+                TextFormField(
+                  controller: systolicController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Systolic (e.g., 120)',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty)
+                      return 'Please enter a number';
+                    if (int.tryParse(value) == null)
+                      return 'Must be a valid number';
+                    return null; // Null means it passed the test!
+                  },
                 ),
-              ),
-              onPressed:
-                  saveVitals, // When clicked, run our magic save function
-              child: const Text(
-                'Save to Diary',
-                style: TextStyle(fontSize: 18),
-              ),
+                const SizedBox(height: 20),
+
+                TextFormField(
+                  controller: diastolicController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Diastolic (e.g., 80)',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty)
+                      return 'Please enter a number';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+
+                TextFormField(
+                  controller: pulseController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Pulse (e.g., 72)',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty)
+                      return 'Please enter a number';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 40),
+
+                SizedBox(
+                  width: double
+                      .infinity, // Makes the button stretch the whole width
+                  height: 55, // Makes the button taller and easier to tap
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: const Color(0xFFFFD700),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ), // Rounded corners!
+                    ),
+                    onPressed: saveVitals,
+                    child: const Text(
+                      'Save to Diary',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
