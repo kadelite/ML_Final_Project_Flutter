@@ -11,15 +11,22 @@ class InsightsScreen extends StatefulWidget {
 }
 
 class _InsightsScreenState extends State<InsightsScreen> {
-  String aiPrediction = "Select a category and tap 'Run AI Analysis'";
+  String aiPrediction = "Select an Expert and tap 'Analyze'";
   Color statusColor = Colors.grey;
   bool isLoading = false;
 
-  // Categories for your different datasets
+  // All 6 experts we trained in Colab
   String selectedCategory = "Hypertension";
-  final List<String> categories = ["Hypertension", "Heart Health", "Diabetes"];
+  final List<String> categories = [
+    "Hypertension",
+    "Diabetes",
+    "Heart Disease",
+    "Cardio Risk",
+    "Mental Health",
+    "Hematology",
+  ];
 
-  Future<void> runMultiExpertAI() async {
+  Future<void> runExpertAnalysis() async {
     setState(() => isLoading = true);
 
     try {
@@ -32,14 +39,14 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
       if (vitals.isEmpty) {
         setState(() {
-          aiPrediction = "Please log your Vitals first!";
+          aiPrediction =
+              "Log your Vitals first to provide a baseline for the AI.";
           isLoading = false;
         });
         return;
       }
 
-      // Prepare the data to send to your Python Service
-      // We send the category name so the Python Brain knows which model to use
+      // We send the category to the Python Service so it picks the right .h5 model
       final response = await http
           .post(
             Uri.parse('http://127.0.0.1:5000/predict'),
@@ -50,10 +57,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 'systolic': vitals.first['systolic'],
                 'diastolic': vitals.first['diastolic'],
                 'pulse': vitals.first['pulse'],
+                'age': 45, // Placeholder - usually pulled from user profile
               },
             }),
           )
-          .timeout(const Duration(seconds: 5));
+          .timeout(const Duration(seconds: 7));
 
       if (response.statusCode == 200) {
         final result = jsonDecode(response.body);
@@ -61,13 +69,16 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
         setState(() {
           if (risk == 2) {
-            aiPrediction = "High $selectedCategory Risk Detected!";
+            aiPrediction =
+                "CAUTION: High $selectedCategory Risk detected. Consult your physician.";
             statusColor = Colors.red;
           } else if (risk == 1) {
-            aiPrediction = "Elevated Risk. Monitor closely.";
+            aiPrediction =
+                "MODERATE: $selectedCategory levels are slightly elevated.";
             statusColor = Colors.orange;
           } else {
-            aiPrediction = "Your $selectedCategory levels are Normal.";
+            aiPrediction =
+                "NORMAL: Your $selectedCategory assessment looks healthy.";
             statusColor = Colors.green;
           }
         });
@@ -75,7 +86,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     } catch (e) {
       setState(() {
         aiPrediction =
-            "Python Brain is Offline.\nStart 'brain_service.py' to analyze.";
+            "Connection Failed.\nEnsure Python Brain Service is running on Port 5000.";
         statusColor = Colors.red;
       });
     } finally {
@@ -86,68 +97,100 @@ class _InsightsScreenState extends State<InsightsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('GnG Multi-Expert AI')),
+      appBar: AppBar(
+        title: const Text('GnG AI Intelligence Hub'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(25),
+        padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Select Health Domain",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              "Choose Specialty Expert",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 12),
 
-            // Category Selector
+            // Dropdown Selector with Premium Styling
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(15),
                 border: Border.all(color: Colors.grey.shade300),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: selectedCategory,
                   isExpanded: true,
+                  icon: const Icon(
+                    Icons.arrow_drop_down_circle,
+                    color: Colors.black,
+                  ),
                   items: categories.map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
-                      child: Text(value),
+                      child: Text(
+                        value,
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
                     );
                   }).toList(),
-                  onChanged: (newValue) {
-                    setState(() => selectedCategory = newValue!);
-                  },
+                  onChanged: (newValue) =>
+                      setState(() => selectedCategory = newValue!),
                 ),
               ),
             ),
 
-            const SizedBox(height: 40),
+            const SizedBox(height: 30),
 
-            // Result Display
+            // AI Status Card
             Container(
-              height: 250,
               width: double.infinity,
+              padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: statusColor, width: 2),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(
+                  color: statusColor.withOpacity(0.5),
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: statusColor.withOpacity(0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   isLoading
-                      ? const CircularProgressIndicator()
-                      : Icon(Icons.analytics, size: 80, color: statusColor),
+                      ? const CircularProgressIndicator(color: Colors.black)
+                      : Icon(
+                          selectedCategory == "Mental Health"
+                              ? Icons.psychology
+                              : Icons.verified_user,
+                          size: 70,
+                          color: statusColor,
+                        ),
                   const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Text(
-                      aiPrediction,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  Text(
+                    aiPrediction,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: statusColor == Colors.grey
+                          ? Colors.black54
+                          : statusColor,
                     ),
                   ),
                 ],
@@ -156,22 +199,23 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
             const SizedBox(height: 40),
 
-            // Action Button
+            // Primary Action Button
             SizedBox(
               width: double.infinity,
-              height: 60,
+              height: 65,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
-                  foregroundColor: const Color(0xFFFFD700),
+                  foregroundColor: const Color(0xFFFFD700), // GnG Gold
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(18),
                   ),
+                  elevation: 5,
                 ),
-                onPressed: isLoading ? null : runMultiExpertAI,
+                onPressed: isLoading ? null : runExpertAnalysis,
                 child: const Text(
-                  "Run AI Analysis",
-                  style: TextStyle(fontSize: 20),
+                  "RUN AI DIAGNOSTICS",
+                  style: TextStyle(fontSize: 18, letterSpacing: 1.2),
                 ),
               ),
             ),
