@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "809364461679",
+    "firebase_url": "https://adekunle-project.firebaseio.com",
+    "project_id": "adekunle-project",
+    "storage_bucket": "adekunle-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:809364461679:android:2633665dd50bb3bb42d59a",
+        "android_client_info": {
+          "package_name": "com.example.wellness_diary"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJnXoqCP2I2pXzJoe360sB_vnBIU99CCU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:809364461679:android:11f6ef90fe67c7cd",
+        "android_client_info": {
+          "package_name": "com.googleadmob.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJnXoqCP2I2pXzJoe360sB_vnBIU99CCU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
