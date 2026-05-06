@@ -21,7 +21,15 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "809364461679-dhqmpmt5dfh00ph9h06j18pcqn1qbq59.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.wellnessDiary"
+              }
+            }
+          ]
         }
       }
     },
@@ -40,7 +48,15 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "809364461679-dhqmpmt5dfh00ph9h06j18pcqn1qbq59.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.wellnessDiary"
+              }
+            }
+          ]
         }
       }
     }

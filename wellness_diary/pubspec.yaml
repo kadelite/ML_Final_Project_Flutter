@@ -39,6 +39,9 @@ dependencies:
   provider: ^6.1.5+1
   sqflite_common_ffi: ^2.3.4+1
   http: ^1.2.1
+  # firebase_core: ^4.7.0
+  # firebase_auth: ^6.4.0
+  # firebase_messaging: ^16.2.0
   # tflite_flutter_plus: ^0.0.1
   # tflite_flutter: ^0.10.4
 
